@@ -1,6 +1,6 @@
 # AI Coding 入门 Workshop
 
-45 分钟做出你的第一个个人主页。
+45 分钟做出你的第一个个人主页；新增独立的 **30 分钟 KNN 水果分类模块**，学习数据收集、清洗、规划与建模。两部分可分别授课，连上共约 75 分钟。
 
 这不是一节 HTML 课。学生要带走的是工作流：
 
@@ -10,6 +10,9 @@
 
 - 发给学生：`AI_Coding_Workshop_Student.ipynb`
 - 教师投影讲稿：`AI_Coding_Workshop_Teacher.html`（用浏览器打开，当 PPT 用）
+- KNN 学生实操：[KNN_Workshop_Student.ipynb](KNN_Workshop_Student.ipynb)
+- KNN 教师投影：[KNN_Workshop_Teacher.html](KNN_Workshop_Teacher.html)
+- KNN 采集指南、课时安排、验收标准：[模块说明](modules/knn/README.md)
 - 环境配置指南：`JUPYTER_SETUP.md`（纯文本，没装 Jupyter 也能看）
 - 一键配置脚本：`setup_env.bat`（双击自动完成安装 + 自检，最省事）
 - 只做自检（不安装）：命令行运行 `python setup_env.py --check`
@@ -18,6 +21,16 @@
 - Harness 示例：`examples/harness/`（课后进阶）
 
 学生课堂运行后会在本目录生成 `index.html`、`versions/`、`debug_demo.html`。
+
+## 新模块：KNN 水果分类
+
+用重量和直径区分苹果、橙子、梨，从“每行数据代表什么”开始，完成采集方案、脏数据审计、训练/验证/测试划分、标准化、选 K、最终评估和新水果预测。每个阶段配有 AI 提示词和检查问题。
+
+从项目根目录启动 Jupyter 后打开 `KNN_Workshop_Student.ipynb`。使用 Python 3.10+，沿用现有 Jupyter 环境，模型无需额外依赖。必须分发完整项目目录：Notebook 会读取 `modules/knn/` 中的代码和 CSV。模拟数据已提供，真实数据可课前用 [采集表](modules/knn/data/collection_template.csv) 收集。
+
+教师打开 `KNN_Workshop_Teacher.html` 放映，操作与原讲稿一致。详细课堂安排见 [模块说明](modules/knn/README.md)。以下原有时间节点和单文件网页约束仍针对个人主页课。
+
+维护新模块：编辑 `modules/knn/lesson.md`，再运行 `python -m modules.knn.build_notebook` 重新生成学生 Notebook。开发验证使用 `python -m pytest tests/test_knn.py`（pytest 仅供开发者，学生不需要）。
 
 ## 讲稿怎么用
 

@@ -13,6 +13,8 @@
 4. 它问「启动 JupyterLab 吗？」→ **直接回车**，浏览器会自动打开
 5. 在浏览器里点开 `AI_Coding_Workshop_Student.ipynb`，开课
 
+学习新增水果分类模块时，改为打开 **`KNN_Workshop_Student.ipynb`**。使用 Python 3.10 或更新版本，保留完整的 `modules/knn/` 文件夹，并在项目根目录启动 Jupyter。无需再安装机器学习库。原自检脚本检查共用 Jupyter 环境与主页课程；KNN 课前请额外从头运行新 Notebook。若报 `No module named modules` 或找不到 CSV，请检查启动目录和文件是否完整。
+
 > 提示：新项目里没有 `index.html` 是正常的，课堂上 Part 1 会生成。
 
 ---

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KNN 水果分类 · 数据实践</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+    height: 100%;
+    overflow: hidden;
+    background: #d9d9d9;
+    color: #111;
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", Arial, sans-serif;
+}
+body.fs { background: #000; }
+
+.stage {
+    width: 1920px;
+    height: 1080px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background: #fff;
+    color: #111;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(0,0,0,.18);
+}
+
+.slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    padding: 104px 140px 112px;
+}
+.slide.on { display: flex; }
+.slide.cover { background: #fff; }
+
+.topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: #111;
+}
+.foot {
+    position: absolute;
+    left: 140px;
+    right: 140px;
+    bottom: 36px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 20px;
+    color: #666;
+}
+
+.kicker {
+    font-size: 28px;
+    color: #555;
+    margin-bottom: 32px;
+    letter-spacing: 0;
+}
+h1 {
+    font-size: 92px;
+    line-height: 1.15;
+    font-weight: 700;
+    margin-bottom: 28px;
+}
+h2 {
+    font-size: 64px;
+    line-height: 1.2;
+    font-weight: 700;
+    margin-bottom: 36px;
+}
+.sub {
+    font-size: 36px;
+    color: #444;
+    line-height: 1.5;
+}
+.lead {
+    font-size: 52px;
+    line-height: 1.35;
+    font-weight: 700;
+}
+ul {
+    list-style: none;
+    font-size: 40px;
+    line-height: 1.7;
+}
+ul.small { font-size: 34px; line-height: 1.65; }
+ul li::before {
+    content: "·  ";
+    font-weight: 700;
+}
+.num {
+    font-size: 40px;
+    line-height: 1.7;
+}
+.num div { margin-bottom: 8px; }
+.num b { display: inline-block; min-width: 1.6em; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 32px;
+}
+th, td {
+    text-align: left;
+    padding: 14px 16px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: top;
+}
+th { color: #555; font-weight: 600; font-size: 26px; }
+td:first-child { width: 220px; font-weight: 700; white-space: nowrap; }
+
+.cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    width: 100%;
+}
+.box {
+    border: 2px solid #111;
+    padding: 32px;
+}
+.box h3 { font-size: 32px; margin-bottom: 16px; }
+.box p { font-size: 30px; line-height: 1.5; }
+.strike { text-decoration: line-through; color: #888; }
+.ok { font-weight: 700; }
+pre {
+    font-family: Consolas, "Microsoft YaHei", monospace;
+    font-size: 30px;
+    line-height: 1.55;
+    border-left: 2px solid #111;
+    padding: 12px 36px;
+    white-space: pre-wrap;
+    background: #fff;
+}
+.flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 10px;
+    align-items: center;
+    font-size: 34px;
+    font-weight: 700;
+}
+.flow i {
+    font-style: normal;
+    font-weight: 400;
+    color: #888;
+    padding: 0 4px;
+}
+iframe.demo {
+    width: 100%;
+    height: 720px;
+    border: 2px solid #111;
+    background: #fff;
+}
+.links { font-size: 34px; line-height: 1.8; }
+.links a { color: #111; }
+
+.cover h1 { font-size: 128px; margin-bottom: 48px; }
+.cover .kicker { margin-bottom: 64px; }
+.slide.statement .lead { font-size: 80px; line-height: 1.45; }
+.slide.instruction .lead { font-size: 120px; margin: 32px 0; }
+.slide.instruction h2 { font-size: 36px; font-weight: 400; color: #555; }
+.agenda { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; }
+.agenda dl { display: grid; grid-template-columns: 164px 1fr; gap: 14px 20px; align-content: start; }
+.agenda dt { font: 600 38px/1.4 Consolas, monospace; }
+.agenda dd { font-size: 30px; line-height: 1.8; }
+.milestones { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; margin-top: 40px; }
+.milestones strong { display: block; font: 600 72px/1.2 Consolas, monospace; }
+.milestones small { font-size: 26px; font-weight: 400; color: #666; }
+.milestones p { font-size: 30px; line-height: 1.6; margin-top: 12px; }
+.checkpoint { display: grid; grid-template-columns: 600px 1fr; align-items: center; gap: 64px; }
+.checkpoint strong { font: 600 176px/1 Consolas, monospace; }
+.checkpoint small { display: block; font-size: 30px; color: #666; margin-top: 20px; }
+.checkpoint h2 { margin-bottom: 28px; }
+.workflow-title { font-size: 32px; font-weight: 400; color: #555; }
+.workflow-main { display: flex; flex-direction: column; gap: 28px; margin: 36px 0; }
+.workflow-main .flow { font-size: 64px; gap: 24px; }
+.workflow-caption { font-size: 30px; color: #555; margin-top: 32px; }
+.loop-recap h2 { font-size: 42px; font-weight: 400; margin-bottom: 40px; }
+.loop-recap .lead { font-size: 76px; line-height: 1.2; margin: 40px 0; }
+.loop-example { border-top: 1px solid #ccc; padding-top: 22px; font-size: 28px; line-height: 1.7; color: #555; }
+.loop-question { font-size: 40px; font-weight: 600; margin-top: 40px; }
+.agent-compare h2 { font-size: 42px; font-weight: 400; margin-bottom: 48px; }
+.agent-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
+.agent-columns > .box { min-width: 0; }
+.agent-columns h3 { font-size: 52px; margin-bottom: 12px; }
+.agent-columns p { font-size: 28px; color: #555; }
+.agent-columns .flow { font-size: 38px; gap: 14px; margin-top: 32px; }
+.agent-concepts { display: flex; gap: 48px; margin-top: 48px; padding-top: 24px; border-top: 1px solid #ccc; }
+.agent-concepts dt { font-size: 32px; font-weight: 700; margin-bottom: 10px; }
+.agent-concepts dd { font-size: 26px; line-height: 1.5; color: #555; }
+.closing h2 { font-size: 36px; font-weight: 400; color: #555; margin-bottom: 64px; }
+.closing .lead { font-size: 88px; line-height: 1.55; }
+
+.notes {
+    display: none;
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    width: 420px;
+    max-height: 36vh;
+    overflow: auto;
+    background: #fff;
+    color: #111;
+    border: 2px solid #111;
+    padding: 16px 18px;
+    font-size: 16px;
+    line-height: 1.5;
+    z-index: 9;
+}
+.notes.on { display: block; }
+
+.start {
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.start.hide { display: none; }
+.start h1 { font-size: 56px; margin-bottom: 16px; }
+.start p { font-size: 22px; color: #555; }
+</style>
+</head>
+<body>
+
+<div class="start" id="start">
+    <h1>KNN 水果分类 · 数据实践</h1>
+    <p>点击开始放映　　F5 全屏　　方向键翻页</p>
+</div>
+
+<div class="stage" id="stage">
+    <div class="topbar"></div>
+    <div class="foot">
+        <span>KNN · 从数据到模型</span>
+        <span id="page">1 / 1</span>
+    </div>
+
+    <section class="slide cover on" data-notes="0–1 分钟。拿出一颗水果问：不看照片，只知道重量与直径，你会怎么猜？本课是独立追加的 30 分钟模块，学生打开 KNN_Workshop_Student.ipynb。">
+        <div class="kicker">模块二 · 30 分钟数据实践</div>
+        <h1>让数据来投票</h1>
+        <p class="sub">用 KNN 判断水果种类<br>从采集表，到一个可以解释的模型</p>
+    </section>
+    <section class="slide" data-notes="1–2 分钟。请学生指出输入和输出。标签是已知水果的真实种类，由实物核对；新水果没有标签。编号只负责追踪，不能喂给模型。">
+        <div class="kicker">先定义问题</div><h2>什么是特征，什么是标签？</h2>
+        <table><tr><th>编号 · 追踪用</th><th>重量 · 特征</th><th>直径 · 特征</th><th>种类 · 标签</th></tr><tr><td>G1-001</td><td>180 g</td><td>7.2 cm</td><td>苹果</td></tr><tr><td>NEW</td><td>165 g</td><td>6.8 cm</td><td>？</td></tr></table>
+        <p class="sub" style="margin-top:36px">一行 = 一颗水果。输入两个测量值，输出三种类别之一。</p>
+    </section>
+    <section class="slide" data-notes="2–3 分钟。举例最近三个邻居是苹果、苹果、梨，所以预测苹果。K 是邻居数量，不是类别数量。实际模型使用标准化后的距离。三类时奇数 K 仍可能平票，例如三类各一票，本课实现有固定裁决规则。">
+        <div class="kicker">K-nearest neighbors · K 近邻</div><h2>找最近的 K 个，再投票</h2>
+        <div class="flow"><span>新水果</span><i>→</i><span>计算距离</span><i>→</i><span>取最近 3 个</span><i>→</i><span>多数票</span></div>
+        <div class="cols" style="margin-top:64px"><div class="box"><h3>邻居：苹果 / 苹果 / 梨</h3><p>预测：苹果<br>用已知样本帮助判断新样本。</p></div><div class="box"><h3>不是让大模型猜水果</h3><p>AI 帮我们写程序。<br>KNN 用测量数据做分类。</p></div></div>
+    </section>
+    <section class="slide" data-notes="3–5 分钟。让学生先口头说采集方案，再运行 Notebook 看数据。真实采集放在课前，每类目标至少 20 颗不同水果，覆盖不同大小与批次。没带水果直接用附带模拟 CSV，不能称它为真实采集。">
+        <div class="kicker">Collect · 数据规划从采集前开始</div><h2>先定测量规则，再开表格</h2>
+        <ul class="small"><li>对象：苹果、橙子、梨；每颗有唯一编号</li><li>重量：秤归零，以克记录；直径：最大横向宽度，以厘米记录</li><li>覆盖：不同大小、成熟度和批次，不能只挑“标准果”</li><li>核对：标签来自实物；另记日期、批次、器具和核对人</li></ul>
+        <p class="sub" style="margin-top:28px">同一颗称十次，还是一颗。复测沿用原编号。</p>
+    </section>
+    <section class="slide" data-notes="5–8 分钟。学生复制提示词给 AI；检查它有没有把种类当输入、把同一颗水果重复采集。打开 modules/knn/data/collection_template.csv，表只有列名。模拟数据只用于学习流程，不支持真实识别能力的结论。">
+        <div class="kicker">Prompt 01 · 让 AI 帮忙规划</div><h2>先要采集方案，不急着要代码</h2>
+        <pre>我要用重量和直径区分苹果、橙子、梨。
+请设计适合零基础小组执行的采集方案：
+每行代表什么？如何编号？测量单位与方法是什么？
+如何核对标签、覆盖不同样本、避免重复？
+CSV 列名使用 fruit_id,weight_g,diameter_cm,label。
+请指出这个采集方案可能遗漏的样本来源或场景。</pre>
+    </section>
+    <section class="slide" data-notes="8–10 分钟。先让学生判断，别先给答案。0.18 kg 有明确单位可以换算；空白不可凭空猜。标签错了应回查。相同编号且数据冲突，一起隔离。范围是课前约定，不能看测试成绩后决定删哪些样本。">
+        <div class="kicker">Clean · 先观察原始数据</div><h2>这几行能直接训练吗？</h2>
+        <table><tr><th>记录</th><th>问题</th><th>处理原则</th></tr><tr><td>0.18 kg</td><td>单位不一致</td><td>来源明确 → 换成 180 g</td></tr><tr><td>重量空白 / NaN</td><td>缺失 / 非有限数</td><td>隔离记录，回查或复测</td></tr><tr><td>同编号重复</td><td>同一实体多次出现</td><td>一致留一份，冲突待复核</td></tr><tr><td>banana</td><td>不在本任务标签内</td><td>隔离；不能强改为苹果</td></tr></table>
+    </section>
+    <section class="slide" data-notes="10–14 分钟。学生运行清洗单元格，读审计结果，选一条修正和一条隔离解释原因。AI 不能为了提高分数删掉难样本；先保存原始数据。14 分钟还没跑通的学生用已提供的代码继续。">
+        <div class="kicker">Prompt 02 · 清洗也要有证据</div><h2>让每一次处理说得清楚</h2>
+        <pre>请阅读原始 CSV 和当前清洗代码。
+列出每条数据问题：原行号、编号、原因和处理动作。
+只按预先约定的规则处理；保留原始文件。
+明确单位才换算；缺失与冲突先隔离，不猜标签。
+展示处理前后数量，解释两条实际审计记录。
+不要根据模型准确率决定删哪条记录。</pre>
+    </section>
+    <section class="slide" data-notes="14–17 分钟。训练集提供邻居，验证集选 K，测试集最终考试。分层意味着每份尽量保留三类比例。先按水果 ID 去重，避免同一颗跨集合。固定 seed42 是复现实验，不是挑最好种子。真实跨店测试应整批留出。">
+        <div class="kicker">Split · 先分工，再建模</div><h2>练习 / 模拟考 / 最终考试</h2>
+        <table><tr><th>数据</th><th>约占</th><th>用途</th></tr><tr><td>训练集</td><td>60%</td><td>保存邻居，计算缩放参数</td></tr><tr><td>验证集</td><td>20%</td><td>比较 K=1、3、5</td></tr><tr><td>测试集</td><td>20%</td><td>方案确定后做最终评估</td></tr></table>
+        <p class="sub" style="margin-top:30px">同一颗水果不能跨集合。实际数量以 Notebook 输出为准。</p>
+    </section>
+    <section class="slide" data-notes="17–19 分钟。克的差异可能是几十，厘米的差异可能不到一。标准化让两种特征的尺度可比较。训练集均值与标准差算好后固定应用于验证、测试和新水果。零方差特征的缩放因子设为 1。不要用所有数据先标准化。">
+        <div class="kicker">Scale · 距离受单位影响</div><h2>差 30 克，还是差 0.5 厘米？</h2>
+        <p class="lead">标准化值 =（测量值 − 训练集均值）<br>÷ 训练集标准差</p>
+        <p class="sub" style="margin-top:48px">只用训练集计算这把“尺子”。<br>验证集、测试集、新水果都用同一把尺子。</p>
+    </section>
+    <section class="slide" data-notes="19–21 分钟。运行选 K 和模型单元格。KNN 的训练主要保存样本，不是反复优化神经网络权重。验证集并列时本课选较小 K；邻居投票平票用固定规则。让学生解释选择，禁止拿测试分数挑 K。">
+        <div class="kicker">Model · AI Coding 工作流继续</div><h2>先讲验收，再让 AI 改代码</h2>
+        <pre>阅读当前 KNN 代码，解释从 CSV 到预测的流程。
+检查是否只用训练集计算标准化参数。
+在验证集比较 K=1、3、5，固定随机种子和并列规则。
+方案确定后才在测试集报告准确率、混淆矩阵、基线。
+不要使用编号或真实标签作为输入特征。
+对一个新水果打印邻居编号、类别和距离。</pre>
+    </section>
+    <section class="slide" data-notes="21–23 分钟。看 Notebook 实际输出，不承诺固定准确率。混淆矩阵行是真实类别、列是预测类别，非对角线是错误。基线根据训练集最多类别确定，在测试集评分。样本小、模拟数据，都不能推广成绩。">
+        <div class="kicker">Evaluate · 结果要经得起追问</div><h2>不只看一个准确率</h2>
+        <ul><li>测了多少颗？答对了多少颗？</li><li>哪类最容易混淆？看矩阵的非对角线。</li><li>比“永远猜最多的类别”更好吗？</li><li>这批模拟数据，能代表真实水果吗？</li></ul>
+    </section>
+    <section class="slide" data-notes="23–25 分钟。学生修改 Notebook 的新水果重量和直径，运行预测与邻居图。注意投票占比不是可信概率。香蕉、极端尺寸都不是本模型适用对象，即使能输出类别也不代表懂得识别。">
+        <div class="kicker">Predict · 把推理过程打开看</div><h2>它为什么说是苹果？</h2>
+        <p class="lead">修改重量与直径 → 预测 → 查看邻居</p>
+        <p class="sub" style="margin-top:40px">邻居的编号、种类、距离，就是解释的起点。<br>模型只会在苹果、橙子、梨中选一个。</p>
+    </section>
+    <section class="slide" data-notes="25–28 分钟。建议修改报告的中文显示，风险低且便于现场验收。进阶可以只用训练/验证集比较更多 K，不再报告旧测试分数为独立最终成绩。学生需实际运行、检查再提交；保留原代码作为备份。">
+        <div class="kicker">Iterate · 选一个小改动，真的验证</div><h2>最后三分钟，你来提需求</h2>
+        <div class="cols"><div class="box"><h3>入门：让结果更易读</h3><p>请 AI 把报告中的 apple、orange、pear 显示为中文，保留内部标签。核对预测和指标未变。</p></div><div class="box"><h3>进阶：扩展验证实验</h3><p>请 AI 在训练/验证集比较更多 K。不要用测试集挑参数；再次最终评估需新留出数据。</p></div></div>
+    </section>
+    <section class="slide" data-notes="28–30 分钟。请一位学生展示两条清洗记录、划分、选 K 与评估、一个新水果的邻居。问他们：AI 写得快，哪些判断仍需你负责？保留原主页课的核心：描述、运行、检查、迭代、验证。">
+        <div class="kicker">交付与复盘</div><h2>代码能运行，只是第一步</h2>
+        <ul class="small"><li>我收集了什么？有什么代表性限制？</li><li>我修正或隔离了什么？有证据吗？</li><li>我如何避免泄漏？怎样判断模型有没有用？</li><li>我让 AI 修改了什么？如何验证它做对了？</li></ul>
+        <p class="sub" style="margin-top:32px">AI 帮你写代码，数据决策与验收仍由你负责。</p>
+        <p class="links"><a href="modules/knn/README.md">采集说明与教师参考</a> · <a href="AI_Coding_Workshop_Teacher.html">返回个人主页课程</a></p>
+    </section>
+</div>
+
+<aside class="notes" id="notes"></aside>
+
+<script>
+const stage = document.getElementById("stage");
+const slides = [...document.querySelectorAll(".slide")];
+const notesEl = document.getElementById("notes");
+const pageEl = document.getElementById("page");
+const startEl = document.getElementById("start");
+let i = 0;
+let notesOn = false;
+let started = false;
+
+function fit() {
+    const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    stage.style.transform = "translate(-50%, -50%) scale(" + s + ")";
+}
+
+function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, idx) => s.classList.toggle("on", idx === i));
+    pageEl.textContent = (i + 1) + " / " + slides.length;
+    notesEl.textContent = slides[i].dataset.notes || "";
+    if (started) location.hash = String(i + 1);
+}
+
+function next() { show(i + 1); }
+function prev() { show(i - 1); }
+
+function goFullscreen() {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+}
+
+function start(fs) {
+    started = true;
+    startEl.classList.add("hide");
+    if (fs) goFullscreen();
+    const fromHash = parseInt(location.hash.replace("#", ""), 10);
+    show(Number.isFinite(fromHash) && fromHash > 0 ? fromHash - 1 : 0);
+}
+
+startEl.addEventListener("click", () => start(true));
+
+document.addEventListener("fullscreenchange", () => {
+    document.body.classList.toggle("fs", !!document.fullscreenElement);
+    fit();
+});
+
+window.addEventListener("resize", fit);
+
+window.addEventListener("keydown", (e) => {
+    if (!started) {
+        if (["F5", "Enter", " ", "ArrowRight"].includes(e.key)) {
+            e.preventDefault();
+            start(e.key === "F5");
+        }
+        return;
+    }
+    if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) {
+        e.preventDefault();
+        next();
+    } else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) {
+        e.preventDefault();
+        prev();
+    } else if (e.key === "Home") {
+        show(0);
+    } else if (e.key === "End") {
+        show(slides.length - 1);
+    } else if (e.key === "n" || e.key === "N") {
+        notesOn = !notesOn;
+        notesEl.classList.toggle("on", notesOn);
+    } else if (e.key === "F5") {
+        e.preventDefault();
+        goFullscreen();
+    } else if (e.key === "Escape" && document.fullscreenElement) {
+        document.exitFullscreen();
+    }
+});
+
+stage.addEventListener("click", (e) => {
+    if (!started) return;
+    if (e.target.closest("a, iframe, .notes")) return;
+    if (e.clientX < window.innerWidth * 0.18) prev();
+    else next();
+});
+
+let startX = 0;
+window.addEventListener("touchstart", (e) => { startX = e.changedTouches[0].clientX; });
+window.addEventListener("touchend", (e) => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (!started) return;
+    if (dx < -40) next();
+    if (dx > 40) prev();
+});
+
+fit();
+show(0);
+</script>
+</body>
+</html>

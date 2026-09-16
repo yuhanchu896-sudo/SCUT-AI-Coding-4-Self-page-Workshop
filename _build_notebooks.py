@@ -849,6 +849,16 @@ AI 可以：
 
 # 而不是“是否需要思考”。
 """),
+        md("""\
+# 继续实践：KNN 水果分类（独立 30 分钟模块）
+
+用重量和直径判断水果种类，学习数据采集、清洗、规划和模型验证。
+
+- [打开 KNN 学生 Notebook](KNN_Workshop_Student.ipynb)
+- [采集指南与模块说明](modules/knn/README.md)
+
+沿用当前 Jupyter 环境，Python 3.10+，保留完整项目文件夹。
+"""),
     ]
 
 
